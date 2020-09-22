@@ -3,19 +3,18 @@
 #pragma warning(push, 3)
 #include <Windows.h>
 #pragma warning (pop)
+#include "winMain.h"
 
-LRESULT CALLBACK MainWindowProcedure(HWND WindowsHandle, UINT Message, WPARAM wParam, LPARAM LParam);
 
-DWORD CreateMainGameWindow(_In_ HANDLE Instance);
 
-int WinMain(HINSTANCE Instance, HINSTANCE PreviousInstance, PSTR CommandLine, INT CommandShow)
+INT WinMain(_In_ HINSTANCE Instance, _In_opt_ HINSTANCE PreviousInstance, _In_ PSTR CommandLine, _In_ INT CommandShow)
 {
 
 	UNREFERENCED_PARAMETER(PreviousInstance);
 	UNREFERENCED_PARAMETER(CommandLine);
 	UNREFERENCED_PARAMETER(CommandShow);
 
-	if (CreateMainGameWindow(Instance) != ERROR_SUCCESS) {
+	if (CreateMainGameWindow() != ERROR_SUCCESS) {
 
 		goto Exit;
 	}
@@ -34,27 +33,31 @@ Exit:
 	return (0);
 }
 
-LRESULT CALLBACK MainWindowProcedure(HWND WindowsHandle, UINT Message, WPARAM wParam, LPARAM LParam) {
+LRESULT CALLBACK MainWindowProcedure(_In_ HWND WindowsHandle, _In_ UINT Message, _In_ WPARAM wParam, _In_ LPARAM LParam) {
 
-		LRESULT Result = 0;
+	LRESULT Result = 0;
 
-		switch (Message)
-		{
-		default: {
-
-			Result = DefWindowProcA(WindowsHandle, Message, wParam, LParam);
-			}
-		}
-		return (Result);
+	switch (Message)
+	{
+	case WM_CLOSE: 
+	{
+		PostQuitMessage(0);
 	}
+	default: {
+
+		Result = DefWindowProcA(WindowsHandle, Message, wParam, LParam);
+	}
+	}
+	return (Result);
+}
 
 
-DWORD CreateMainGameWindow (_In_ HANDLE Instance) {
+DWORD CreateMainGameWindow(void) {
 
 	DWORD Result = ERROR_SUCCESS;
 
 	WNDCLASSEXA WindowClass = { 0 };
-	
+
 	HWND WindowHandle = 0;
 
 	WindowClass.cbSize = sizeof(WNDCLASSEXA);
@@ -62,7 +65,7 @@ DWORD CreateMainGameWindow (_In_ HANDLE Instance) {
 	WindowClass.lpfnWndProc = MainWindowProcedure;
 	WindowClass.cbClsExtra = 0;
 	WindowClass.cbWndExtra = 0;
-	WindowClass.hInstance = Instance;
+	WindowClass.hInstance = GetModuleHandleA(NULL);
 	WindowClass.hIcon = LoadIconA(NULL, IDI_APPLICATION);
 	WindowClass.hIconSm = LoadIconA(NULL, IDI_APPLICATION);
 	WindowClass.hCursor = LoadCursorA(NULL, IDC_ARROW);
@@ -70,7 +73,7 @@ DWORD CreateMainGameWindow (_In_ HANDLE Instance) {
 	WindowClass.lpszMenuName = NULL;
 	WindowClass.lpszClassName = "GAME_2D_WINDOWCLASS";
 
-	if (RegisterClassExA(&WindowClass) == 0){
+	if (RegisterClassExA(&WindowClass) == 0) {
 
 		Result = GetLastError();
 
@@ -79,7 +82,7 @@ DWORD CreateMainGameWindow (_In_ HANDLE Instance) {
 		goto Exit;
 	}
 
-	WindowHandle = CreateWindowExA(WS_EX_CLIENTEDGE, WindowClass.lpszClassName, "Window Title", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, Instance, NULL);
+	WindowHandle = CreateWindowExA(WS_EX_CLIENTEDGE, WindowClass.lpszClassName, "Window Title", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, GetModuleHandleA(NULL), NULL);
 
 	if (WindowHandle == NULL) {
 
@@ -91,11 +94,9 @@ DWORD CreateMainGameWindow (_In_ HANDLE Instance) {
 	}
 
 
-		
+
 Exit:
 
 	return(Result);
 
 }
-
-
